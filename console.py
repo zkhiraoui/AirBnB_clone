@@ -130,5 +130,15 @@ class HBNBCommand(cmd.Cmd):
             if parts[1] == "all()":
                 self.do_all(parts[0])
 
+def do_count(self, arg):
+    """Prints the number of of a given class."""
+    all_objs = storage.all()
+    if arg:
+        if arg not in self.class_dict:
+            print("** class doesn't exist **")
+            return
+        print(len([obj for obj in all_objs.values() if type(obj).__name__ == arg]))
+    else:
+        print(len(all_objs))
 if __name__ == '__main__':
     HBNBCommand().cmdloop()
