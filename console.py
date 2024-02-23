@@ -102,5 +102,19 @@ class HBNBCommand(cmd.Cmd):
             else:
                 print("** no instance found **")
 
+def do_create(self, arg):
+    """Creates a new instance of BaseModel or User, saves it, and prints the id."""
+    if not arg:
+        print("** class name missing **")
+    elif arg not in ["BaseModel", "User"]:
+        print("** class doesn't exist **")
+    else:
+        if arg == "BaseModel":
+            obj = BaseModel()
+        elif arg == "User":
+            obj = User()
+        obj.save()
+        print(obj.id)
+
 if __name__ == '__main__':
     HBNBCommand().cmdloop()

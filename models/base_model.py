@@ -32,3 +32,7 @@ class BaseModel:
         dict_rep['created_at'] = self.created_at.isoformat()
         dict_rep['updated_at'] = self.updated_at.isoformat()
         return dict_rep
+
+    def __str__(self):
+        """String representation of the BaseModel instance."""
+        return "[{}] ({}) {}".format(self.__class__.__name__, self.id, self.__dict__)
