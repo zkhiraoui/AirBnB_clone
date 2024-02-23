@@ -38,6 +38,23 @@ class FileStorage:
             with open(self.file_path, "r") as f:
                 objects = json.load(f)
                 for obj_id, obj_dict in objects.items():
-                    self.objects[obj_id] = eval(obj_dict["__class__"])(**obj_dict)
+                    cls_name = obj_dict["__class__"]
+                    del obj_dict["__class__"]
+                    if cls_name == "BaseModel":
+                        self.objects[obj_id] = BaseModel(**obj_dict)
+                    elif cls_name == "User":
+                        self.objects[obj_id] = User(**obj_dict)
+                    elif cls_name == "State":
+                        self.objects[obj_id] = State(**obj_dict)
+                    elif cls_name == "City":
+                        self.objects[obj_id] = City(**obj_dict)
+                    elif cls_name == "Amenity":
+                        self.objects[obj_id] = Amenity(**obj_dict)
+                    elif cls_name == "Place":
+                        self.objects[obj_id] = Place(**obj_dict)
+                    elif cls_name == "Review":
+                        self.objects[obj_id] = Review(**obj_dict)
         except FileNotFoundError:
+            pass
+        except JSONDecodeError:
             pass

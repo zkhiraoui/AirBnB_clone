@@ -1,106 +1,96 @@
-#!/usr/bin/python3
-"""
-Console module for the HBNB project.
-"""
 import cmd
-from models import storage
 from models.base_model import BaseModel
-from models.engine.file_storage import FileStorage
+from models.user import User
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.place import Place
+from models.review import Review
+from file_storage import FileStorage
 
 class HBNBCommand(cmd.Cmd):
-    """Defines the HBNB command interpreter."""
-    prompt = '(hbnb) '
-    
-    def do_quit(self, arg):
-        """Quit command to exit the program."""
-        return True
+    """HBNB command interpreter"""
+
+    prompt = "(hbnb) "
+
+    def __init__(self):
+        """Initializes HBNBCommand"""
+        self.storage = FileStorage()
 
     def do_EOF(self, arg):
-        """EOF command to exit the program."""
-        print()  # Print a newline character for formatting
+        """Quits the program"""
+        print()
         return True
 
-    def emptyline(self):
-        """Do nothing on empty input line."""
-        pass
+    def do_quit(self, arg):
+        """Quits the program"""
+        print("Goodbye!")
+        return True
 
     def do_create(self, arg):
-        """Creates a new instance of BaseModel, saves it, and prints the id."""
-        if not arg:
-            print("** class name missing **")
-        elif arg != "BaseModel":
-            print("** class doesn't exist **")
-        else:
-            new_instance = BaseModel()
-            new_instance.save()
-            print(new_instance.id)
+        """Creates a new object"""
+        try:
+            args = arg.split()
+            cls_name = args[0]
+            obj_id = args[1]
+            if cls_name == "BaseModel":
+                obj = BaseModel(id=obj_id)
+            elif cls_name == "User":
+                obj = User(id=obj_id, name=args[2], email=args[3])
+            elif cls_name == "State":
+                obj = State(id=obj_id, name=args[2])
+            elif cls_name == "City":
+                obj = City(id=obj_id, name=args[2], state_id=args[3])
+            elif cls_name == "Amenity":
+                obj = Amenity(id=obj_id, name=args[2])
+            elif cls_name == "Place":
+                obj = Place(id=obj_id, name=args[2], city_id=args[3], user_id=args[4],
+                             description=args[5], number_rooms=int(args[6]),
+                             number_bathrooms=int(args[7]), max_guests=int(args[8]),
+                             price_by_night=int(args[9]), latitude=float(args[10]),
+                             longitude=float(args[11]))
+            elif cls_name == "Review":
+                obj = Review(id=obj_id, user_id=args[2], place_id=args[3],
+                              text=args[4], rating=int(args[5]))
+            else:
+                print("Invalid class name")
+                return
+            self.storage.new(obj)
+            self.storage.save()
+            print("Created successfully")
+        except IndexError:
+            print("Invalid arguments")
 
     def do_show(self, arg):
-        """Shows the string representation of an instance based on the class name and id."""
-        args = arg.split()
-        if len(args) == 0:
-            print("** class name missing **")
-        elif args[0] != "BaseModel":
-            print("** class doesn't exist **")
-        elif len(args) == 1:
-            print("** instance id missing **")
-        else:
-            all_objs = storage.all()
-            obj_key = f"{args[0]}.{args[1]}"
-            if obj_key in all_objs:
-                print(all_objs[obj_key])
-            else:
-                print("** no instance found **")
+        """Shows an object"""
+        try:
+            obj_id = arg.split()[0]
+            obj = self.storage.objects[f"{obj_id.__class__.__name__}.{obj_id}"]
+            print(obj)
+        except (IndexError, KeyError):
+            print("Invalid arguments")
 
     def do_destroy(self, arg):
-        """Deletes an instance based on the class name and id."""
-        args = arg.split()
-        if len(args) == 0:
-            print("** class name missing **")
-        elif args[0] != "BaseModel":
-            print("** class doesn't exist **")
-        elif len(args) == 1:
-            print("** instance id missing **")
-        else:
-            all_objs = storage.all()
-            obj_key = f"{args[0]}.{args[1]}"
-            if obj_key in all_objs:
-                del all_objs[obj_key]
-                storage.save()
-            else:
-                print("** no instance found **")
+        """Deletes an object"""
+        try:
+            obj_id = arg.split()[0]
+            obj = self.storage.objects[f"{obj_id.__class__.__name__}.{obj_id}"]
+            del self.storage.objects[f"{obj_id.__class__.__name__}.{obj_id}"]
+            self.storage.save()
+            print("Deleted successfully")
+        except (IndexError, KeyError):
+            print("Invalid arguments")
 
     def do_all(self, arg):
-        """Prints all string representation of all instances based or not on the class name."""
-        if arg and arg != "BaseModel":
-            print("** class doesn't exist **")
-        else:
-            all_objs = storage.all()
-            print([str(obj) for obj in all_objs.values() if not arg or obj.__class__.__name__ == arg])
+        """Shows all objects"""
+        for obj in self.storage.all().values():
+            print(obj)
 
     def do_update(self, arg):
-        """Updates an instance based on the class name and id by adding or updating attribute."""
-        args = arg.split()
-        if len(args) == 0:
-            print("** class name missing **")
-        elif args[0] != "BaseModel":
-            print("** class doesn't exist **")
-        elif len(args) == 1:
-            print("** instance id missing **")
-        elif len(args) == 2:
-            print("** attribute name missing **")
-        elif len(args) == 3:
-            print("** value missing **")
-        else:
-            all_objs = storage.all()
-            obj_key = f"{args[0]}.{args[1]}"
-            if obj_key in all_objs:
-                obj = all_objs[obj_key]
-                if args[2] not in ["id", "created_at", "updated_at"]:
-                    setattr(obj, args[2], args[3].strip('"'))
-                    obj.save()
-            else:
-                print("** no instance found **")
-
-if __name__ == '__main__':
-    HBNBCommand().cmdloop()
+        """Updates an object"""
+        try:
+            args = arg.split()
+            obj_id = args[0]
+            obj = self.storage.objects[f"{obj_id.__class__.__name__}.{obj_id}"]
+            if args[1] == "name":
+                obj.name = args
