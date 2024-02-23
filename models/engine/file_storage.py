@@ -1,8 +1,12 @@
 import json
 import os
-from models.user import User
 from models.base_model import BaseModel
-# Import other models here as needed
+from models.user import User
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.place import Place
+from models.review import Review
 from json.decoder import JSONDecodeError
 
 class FileStorage:
@@ -24,16 +28,13 @@ class FileStorage:
             json.dump({k: v.to_dict() for k, v in self.__objects.items()}, f)
 
     def reload(self):
-        """Deserializes the JSON file to __objects."""
+	"""Deserializes the JSON file to __objects."""
         try:
             with open(self.__file_path, 'r') as f:
-                objects = json.load(f)
-            for obj_id, obj_dict in objects.items():
+                objs = json.load(f)
+            for obj_id, obj_dict in objs.items():
                 cls_name = obj_dict['__class__']
-                if cls_name == 'BaseModel':
-                    self.__objects[obj_id] = BaseModel(**obj_dict)
-                elif cls_name == 'User':
-                    self.__objects[obj_id] = User(**obj_dict)
-                # Add more classes here as your project expands
+                cls = globals()[cls_name]
+                self.__objects[obj_id] = cls(**obj_dict)
         except FileNotFoundError:
             pass
