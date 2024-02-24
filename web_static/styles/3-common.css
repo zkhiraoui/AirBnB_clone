@@ -1,6 +1,7 @@
-body {
+body, html {
     margin: 0;
     padding: 0;
+    background-color: white; 
     font-family: Circular, "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 14px;
     color: #484848;
